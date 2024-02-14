@@ -29,4 +29,6 @@ public abstract class Player {
     public PlayerType getPlayertype() {
         return playertype;
     }
+
+    public abstract Cell makeMove(Board board);
 }

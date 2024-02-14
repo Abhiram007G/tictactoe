@@ -8,6 +8,7 @@ import Strategies.WinningStrategy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 public class Game {
     private List<Player> players;
@@ -15,16 +16,18 @@ public class Game {
     private Player winner;
     private GameState gameState;
     private int nextPlayerIndex;
-    private List<WinningStrategy> winningStrategy;
+    private List<WinningStrategy> winningStrategies;
+    private Random random = new Random();
 
     private List<Move> moves;
 
-    public Game(List<Player> players, int dimension,List<WinningStrategy> winningStrategy) {
+    public Game(List<Player> players, int dimension,List<WinningStrategy> winningStrategies) {
         this.players = players;
         this.board = new Board(dimension);
-        this.winningStrategy = winningStrategy;
+        this.winningStrategies = winningStrategies;
         this.gameState = GameState.IN_PROGRESS;
-        this.nextPlayerIndex=0;
+        this.nextPlayerIndex= random.nextInt(players.size());
+//        this.nextPlayerIndex= random.nextInt(dimension);
         this.moves = new ArrayList<>();
     }
 
@@ -82,6 +85,63 @@ public class Game {
 
     public void printBoard() {
         board.printBoard();
+    }
+
+    public void makeMove() {
+        Player player = players.get(nextPlayerIndex);
+        Cell cell= player.makeMove(board);
+        Move move = new Move(cell,player);
+        moves.add(move);
+
+        if(checkWinner(move,board)){
+            gameState = GameState.CONCLUDED;
+            winner = player;
+            return;
+        }
+
+        if(moves.size()== (board.getDimension())* board.getDimension()){
+            gameState = GameState.DRAW;
+            return;
+        }
+
+        nextPlayerIndex++;
+        nextPlayerIndex = nextPlayerIndex% (players.size());
+
+    }
+
+    private boolean checkWinner(Move move, Board board) {
+        for (WinningStrategy winningStrategy : winningStrategies){
+             if (winningStrategy.checkWinner(board,move)){
+                 return true;
+             }
+        }
+        return false;
+    }
+
+    public void undo() {
+        if(moves.size()==0){
+            System.out.println("No moves to undo");
+            return;
+        }
+
+        Move lastMove = moves.get(moves.size()-1);
+        moves.remove(lastMove);
+
+        Cell cell = lastMove.getCell();
+        cell.setCellState(CellState.EMPTY);
+        cell.setPlayer(null);
+
+        for(WinningStrategy winningStrategy: winningStrategies){
+            winningStrategy.handleUndo(board,lastMove);
+        }
+
+        if (nextPlayerIndex!=0) {
+            nextPlayerIndex--;
+        }
+        else{
+            nextPlayerIndex = players.size()-1;
+        }
+
     }
 
     public static class Builder {

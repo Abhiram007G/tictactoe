@@ -1,5 +1,6 @@
 package models;
 
+
 public class Cell {
     int row;
     int col;
@@ -24,9 +25,26 @@ public class Cell {
         return cellState;
     }
 
+    public void setCellState(CellState cellState){
+        this.cellState = cellState;
+    }
+
+    public void setRow(int row){
+        this.row = row;
+    }
+
+    public void setCol(int col){
+        this.col = col;
+    }
+
     public Player getPlayer() {
         return player;
     }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
 
     public void printCell() {
         if (cellState.equals(CellState.FILLED)){
